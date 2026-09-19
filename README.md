@@ -9,6 +9,10 @@
 
 **TVWebRemote** is a lightweight Android service that hosts an embedded, mobile-first Web Remote Dashboard directly on your Android TV box (port `8080`). Anyone connected to your local Wi-Fi can open **`http://tv.local:8080`** in Safari, Chrome, or any browser to instantly control the TV—**no App Store downloads, TestFlight, or client installs required**.
 
+<p align="center">
+  <img src="docs/screenshot.png" alt="TV Web Remote on iPhone" width="320" />
+</p>
+
 ---
 
 ## ✨ Features
