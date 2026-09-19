@@ -20,12 +20,18 @@
   - **Unified Volume Rocker**: Vertical pill rocker for Volume Up and Volume Down.
   - Dedicated **Back**, **TV/Home**, **Menu**, **Power**, and **Pause** controls.
   - **Tactile Audio & Haptic Feedback**: Optional mechanical click audio synthesizer and tight haptics (`navigator.vibrate`).
+- ⌨️ **TV Keyboard & Voice Dictation**:
+  - Seamless text input from your mobile software keyboard.
+  - Full support for mobile microphone voice dictation (🎙️).
+  - Built-in Cyrillic-to-Latin transliteration engine (Uzbek & Russian) to prevent Android `input text` crashes.
+  - Direct on-screen controls for `DEL` (Backspace), `Space`, `Enter`, and TV field clearing.
 - 📑 **iOS 18 Style Bottom Sheet**:
   - Dedicated **Quick Channels** drawer with category filter tabs (*Popular, National, Entertainment*).
   - Real-time instant search filter.
   - Pre-configured channel tuning with instant sequence dialing.
-- 🚀 **Quick Apps Row**: One-tap instant launchers for **TelecomTV**, **YouTube TV**, and **Settings**.
-- 🔄 **Boot Persistence**: Starts automatically in the background on TV power-on via `RECEIVE_BOOT_COMPLETED`.
+- 🚀 **Quick Apps Row**: One-tap instant launchers for **TelecomTV**, **YouTube TV**, **Keyboard**, **Numpad**, and **Settings**.
+- 🇺🇿 **Uzbek Localization**: Clean, intuitive native Uzbek language interface.
+- 🔄 **Boot & Standby Persistence**: Starts automatically on TV boot (`RECEIVE_BOOT_COMPLETED`), exempted from Doze mode, and holds `WakeLock` + `WifiLock` for 24/7 responsiveness.
 
 ---
 

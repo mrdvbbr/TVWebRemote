@@ -189,6 +189,34 @@ public class HttpServer {
                 } else {
                     sendResponse(os, 400, "application/json", "{\"error\":\"Missing pkg\"}".getBytes("UTF-8"));
                 }
+            } else if (path.equals("/api/text")) {
+                String text = queryParams.get("text");
+                if (text == null && !body.isEmpty()) {
+                    text = body;
+                }
+                boolean enter = "true".equalsIgnoreCase(queryParams.get("enter")) || "1".equals(queryParams.get("enter"));
+                boolean clear = "true".equalsIgnoreCase(queryParams.get("clear")) || "1".equals(queryParams.get("clear"));
+                if (clear) {
+                    KeyDispatcher.clearText(20);
+                    try { Thread.sleep(60); } catch (Exception ignored) {}
+                }
+                if (text != null && !text.isEmpty()) {
+                    KeyDispatcher.sendText(text, enter);
+                    sendResponse(os, 200, "application/json", "{\"success\":true}".getBytes("UTF-8"));
+                } else if (enter) {
+                    KeyDispatcher.sendKey(66);
+                    sendResponse(os, 200, "application/json", "{\"success\":true}".getBytes("UTF-8"));
+                } else {
+                    sendResponse(os, 400, "application/json", "{\"error\":\"Missing text\"}".getBytes("UTF-8"));
+                }
+            } else if (path.equals("/api/clear")) {
+                int count = 20;
+                String cStr = queryParams.get("count");
+                if (cStr != null) {
+                    try { count = Integer.parseInt(cStr); } catch (Exception ignored) {}
+                }
+                KeyDispatcher.clearText(count);
+                sendResponse(os, 200, "application/json", "{\"success\":true}".getBytes("UTF-8"));
             } else if (path.equals("/api/status")) {
                 sendResponse(os, 200, "application/json", "{\"status\":\"running\",\"port\":8080}".getBytes("UTF-8"));
             } else {

@@ -40,6 +40,11 @@ public class KeyDispatcher {
             case "mute": return 164;
             case "power": return 26;
             case "playpause": return 85;
+            case "backspace":
+            case "del":
+            case "delete": return 67;
+            case "space": return 62;
+            case "clear": return 28;
             default:
                 try {
                     return Integer.parseInt(name);
@@ -60,6 +65,113 @@ public class KeyDispatcher {
                 }
             }
         });
+    }
+
+    public static void sendText(final String rawText, final boolean pressEnter) {
+        if (rawText == null || rawText.isEmpty()) {
+            if (pressEnter) {
+                sendKey(66);
+            }
+            return;
+        }
+        executor.execute(new Runnable() {
+            @Override
+            public void run() {
+                String text = transliterate(rawText);
+                StringBuilder escaped = new StringBuilder();
+                for (int i = 0; i < text.length(); i++) {
+                    char c = text.charAt(i);
+                    if (c == ' ') {
+                        escaped.append("%s");
+                    } else if (c == '\\' || c == '"' || c == '$' || c == '`' || c == '(' || c == ')' ||
+                               c == '&' || c == ';' || c == '<' || c == '>' || c == '|' || c == '*' ||
+                               c == '?' || c == '[' || c == ']' || c == '{' || c == '}' || c == '#') {
+                        escaped.append('\\').append(c);
+                    } else if (c >= 32 && c <= 126) {
+                        escaped.append(c);
+                    }
+                }
+                String cmd = "input text \"" + escaped.toString() + "\"";
+                sendViaAdb(cmd);
+                if (pressEnter) {
+                    try {
+                        Thread.sleep(80);
+                    } catch (Exception ignored) {}
+                    sendKey(66);
+                }
+            }
+        });
+    }
+
+    public static void clearText(final int count) {
+        executor.execute(new Runnable() {
+            @Override
+            public void run() {
+                int times = (count > 0 && count <= 50) ? count : 15;
+                StringBuilder sb = new StringBuilder("SEQ:");
+                for (int i = 0; i < times; i++) {
+                    sb.append("67 ");
+                }
+                boolean sent = sendViaUdp(sb.toString().trim());
+                if (!sent) {
+                    StringBuilder adbCmd = new StringBuilder("input keyevent");
+                    for (int i = 0; i < times; i++) {
+                        adbCmd.append(" 67");
+                    }
+                    sendViaAdb(adbCmd.toString());
+                }
+            }
+        });
+    }
+
+    public static String transliterate(String text) {
+        if (text == null) return "";
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < text.length(); i++) {
+            char c = text.charAt(i);
+            switch (c) {
+                case 'а': sb.append("a"); break; case 'А': sb.append("A"); break;
+                case 'б': sb.append("b"); break; case 'Б': sb.append("B"); break;
+                case 'в': sb.append("v"); break; case 'В': sb.append("V"); break;
+                case 'г': sb.append("g"); break; case 'Г': sb.append("G"); break;
+                case 'д': sb.append("d"); break; case 'Д': sb.append("D"); break;
+                case 'е': sb.append("e"); break; case 'Е': sb.append("E"); break;
+                case 'ё': sb.append("yo"); break; case 'Ё': sb.append("Yo"); break;
+                case 'ж': sb.append("j"); break; case 'Ж': sb.append("J"); break;
+                case 'з': sb.append("z"); break; case 'З': sb.append("Z"); break;
+                case 'и': sb.append("i"); break; case 'И': sb.append("I"); break;
+                case 'й': sb.append("y"); break; case 'Й': sb.append("Y"); break;
+                case 'к': sb.append("k"); break; case 'К': sb.append("K"); break;
+                case 'л': sb.append("l"); break; case 'Л': sb.append("L"); break;
+                case 'м': sb.append("m"); break; case 'М': sb.append("M"); break;
+                case 'н': sb.append("n"); break; case 'Н': sb.append("N"); break;
+                case 'о': sb.append("o"); break; case 'О': sb.append("O"); break;
+                case 'п': sb.append("p"); break; case 'П': sb.append("P"); break;
+                case 'р': sb.append("r"); break; case 'Р': sb.append("R"); break;
+                case 'с': sb.append("s"); break; case 'С': sb.append("S"); break;
+                case 'т': sb.append("t"); break; case 'Т': sb.append("T"); break;
+                case 'у': sb.append("u"); break; case 'У': sb.append("U"); break;
+                case 'ф': sb.append("f"); break; case 'Ф': sb.append("F"); break;
+                case 'х': sb.append("x"); break; case 'Х': sb.append("X"); break;
+                case 'ц': sb.append("ts"); break; case 'Ц': sb.append("Ts"); break;
+                case 'ч': sb.append("ch"); break; case 'Ч': sb.append("Ch"); break;
+                case 'ш': sb.append("sh"); break; case 'Ш': sb.append("Sh"); break;
+                case 'щ': sb.append("sh"); break; case 'Щ': sb.append("Sh"); break;
+                case 'ъ': case 'ь': case 'Ъ': case 'Ь': break;
+                case 'ы': sb.append("i"); break; case 'Ы': sb.append("I"); break;
+                case 'э': sb.append("e"); break; case 'Э': sb.append("E"); break;
+                case 'ю': sb.append("yu"); break; case 'Ю': sb.append("Yu"); break;
+                case 'я': sb.append("ya"); break; case 'Я': sb.append("Ya"); break;
+                case 'ў': sb.append("o'"); break; case 'Ў': sb.append("O'"); break;
+                case 'қ': sb.append("q"); break; case 'Қ': sb.append("Q"); break;
+                case 'ғ': sb.append("g'"); break; case 'Ғ': sb.append("G'"); break;
+                case 'ҳ': sb.append("h"); break; case 'Ҳ': sb.append("H"); break;
+                default:
+                    sb.append(c);
+                    break;
+            }
+        }
+        return sb.toString();
     }
 
     public static void tuneChannel(final Context context, final String channelNum) {
@@ -122,6 +234,17 @@ public class KeyDispatcher {
         executor.execute(new Runnable() {
             @Override
             public void run() {
+                if ("settings".equalsIgnoreCase(pkg) || "com.android.tv.settings".equalsIgnoreCase(pkg)) {
+                    try {
+                        Intent intent = new Intent(android.provider.Settings.ACTION_SETTINGS);
+                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                        context.startActivity(intent);
+                        return;
+                    } catch (Exception ignored) {}
+                    sendViaAdb("am start -a android.settings.SETTINGS");
+                    return;
+                }
+
                 try {
                     Intent intent = context.getPackageManager().getLaunchIntentForPackage(pkg);
                     if (intent != null) {
@@ -178,6 +301,11 @@ public class KeyDispatcher {
             // Send A_OPEN
             byte[] cmdData = ("shell:" + command + "\0").getBytes("UTF-8");
             sendPacket(out, 0x4e45504f, 1, 0, cmdData);
+
+            // Wait for A_OKAY and allow child process to detach
+            byte[] resp = new byte[24];
+            in.read(resp);
+            Thread.sleep(100);
 
         } catch (Exception e) {
             try {

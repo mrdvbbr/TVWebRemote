@@ -6,8 +6,10 @@ import android.app.NotificationManager;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.os.IBinder;
+import android.os.PowerManager;
 import android.util.Log;
 
 public class WebRemoteService extends Service {
@@ -16,6 +18,8 @@ public class WebRemoteService extends Service {
     private static final int NOTIFICATION_ID = 1001;
 
     private HttpServer server;
+    private PowerManager.WakeLock wakeLock;
+    private WifiManager.WifiLock wifiLock;
 
     @Override
     public void onCreate() {
@@ -26,6 +30,23 @@ public class WebRemoteService extends Service {
             startForeground(NOTIFICATION_ID, notification);
         } catch (Exception e) {
             Log.w(TAG, "startForeground error: " + e.getMessage());
+        }
+
+        try {
+            PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
+            if (pm != null) {
+                wakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "TVWebRemote::ServiceWakeLock");
+                wakeLock.setReferenceCounted(false);
+                wakeLock.acquire();
+            }
+            WifiManager wm = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+            if (wm != null) {
+                wifiLock = wm.createWifiLock(WifiManager.WIFI_MODE_FULL_HIGH_PERF, "TVWebRemote::WifiLock");
+                wifiLock.setReferenceCounted(false);
+                wifiLock.acquire();
+            }
+        } catch (Exception e) {
+            Log.w(TAG, "Failed to acquire locks: " + e.getMessage());
         }
 
         server = new HttpServer(getApplicationContext(), 8080);
@@ -46,6 +67,12 @@ public class WebRemoteService extends Service {
 
     @Override
     public void onDestroy() {
+        if (wakeLock != null && wakeLock.isHeld()) {
+            try { wakeLock.release(); } catch (Exception ignored) {}
+        }
+        if (wifiLock != null && wifiLock.isHeld()) {
+            try { wifiLock.release(); } catch (Exception ignored) {}
+        }
         if (server != null) {
             server.stop();
         }
