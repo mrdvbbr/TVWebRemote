@@ -18,6 +18,7 @@ public class WebRemoteService extends Service {
     private static final int NOTIFICATION_ID = 1001;
 
     private HttpServer server;
+    private MdnsResponder mdnsResponder;
     private PowerManager.WakeLock wakeLock;
     private WifiManager.WifiLock wifiLock;
 
@@ -53,6 +54,14 @@ public class WebRemoteService extends Service {
         server.start();
         Log.i(TAG, "WebRemoteService created, HttpServer running on port 8080");
 
+        try {
+            mdnsResponder = new MdnsResponder(getApplicationContext());
+            mdnsResponder.start();
+            Log.i(TAG, "MdnsResponder initialized and started");
+        } catch (Exception e) {
+            Log.w(TAG, "Failed to start MdnsResponder: " + e.getMessage());
+        }
+
         KeyDispatcher.ensureTvKeyDaemon(getApplicationContext());
     }
 
@@ -61,6 +70,12 @@ public class WebRemoteService extends Service {
         if (server == null || !server.isRunning()) {
             server = new HttpServer(getApplicationContext(), 8080);
             server.start();
+        }
+        if (mdnsResponder == null) {
+            try {
+                mdnsResponder = new MdnsResponder(getApplicationContext());
+                mdnsResponder.start();
+            } catch (Exception ignored) {}
         }
         return START_STICKY;
     }
@@ -72,6 +87,10 @@ public class WebRemoteService extends Service {
         }
         if (wifiLock != null && wifiLock.isHeld()) {
             try { wifiLock.release(); } catch (Exception ignored) {}
+        }
+        if (mdnsResponder != null) {
+            try { mdnsResponder.stop(); } catch (Exception ignored) {}
+            mdnsResponder = null;
         }
         if (server != null) {
             server.stop();

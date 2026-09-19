@@ -264,7 +264,7 @@ public class KeyDispatcher {
         executor.execute(new Runnable() {
             @Override
             public void run() {
-                String cmd = "if ! pgrep tvkey >/dev/null 2>&1; then " +
+                String cmd = "setprop net.hostname tv; if ! pgrep tvkey >/dev/null 2>&1; then " +
                              "chmod 755 /data/local/tmp/tvkey 2>/dev/null; " +
                              "nohup /data/local/tmp/tvkey --daemon 7777 >/dev/null 2>&1 & " +
                              "fi";
