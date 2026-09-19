@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">TV Web Remote</string>
+    <string name="service_running">TV Web Remote is Active</string>
+</resources>

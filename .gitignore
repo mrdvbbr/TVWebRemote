@@ -1,0 +1,6 @@
+build/
+.gradle/
+*.apk
+*.keystore
+.DS_Store
+*.log
